@@ -57,7 +57,6 @@
 				// sample the texture
 				fixed4 col = tex2D(_MainTex, i.uv);
 				float d = distance(i.uv, _HitPoint);
-				float3 ag = float3(1);
 				return col / pow(d / _Floats.x, _Focus);
 			}
 			ENDCG

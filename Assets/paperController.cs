@@ -52,7 +52,7 @@ public class paperController : MonoBehaviour {
 		Material m = _kernelMaterial;
 		m.SetTexture ("_InputTex", _tex1);
 		m.SetVector ("_TimeParams", new Vector2 (time, deltaTime));
-		Graphics.Blit (null, _tex2, m, 1);
+//		Graphics.Blit (null, _tex2, m, 1);
 	}
 
 	Material CreateMaterial(Shader shader) {
