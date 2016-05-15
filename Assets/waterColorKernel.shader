@@ -12,6 +12,7 @@
 
     sampler2D _InputTex;
     float4 _InputTex_ST;
+    float4 _InputTex_TexelSize;
     float _RandomSeed;
 
     float2 _HitPoint;
@@ -38,6 +39,7 @@
      struct vertexOutput {
         float4 pos : SV_POSITION;
         float2 uv : TEXCOORD0;
+        float2 taps[4] : TEXCOORD1;
      };
 
      // vertex function
@@ -46,6 +48,12 @@
 
         o.uv = TRANSFORM_TEX(v.uv, _InputTex);
         o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+
+        o.taps[0] = o.uv + half2(_InputTex_TexelSize.x,0);
+        o.taps[1] = o.uv + half2(0,_InputTex_TexelSize.y);
+        o.taps[2] = o.uv - half2(_InputTex_TexelSize.x,0);
+        o.taps[3] = o.uv - half2(0,_InputTex_TexelSize.y);
+
         return o;
      }
 
@@ -59,7 +67,13 @@
     float4 spread(vertexOutput i) : SV_Target 
     {
         fixed4 col = tex2D(_InputTex, i.uv);
-        return col + 0.01;
+
+        float4 tex = tex2D(_InputTex, i.taps[0].xy);
+        tex += tex2D(_InputTex, i.taps[1].xy);
+        tex += tex2D(_InputTex, i.taps[2].xy);
+        tex += tex2D(_InputTex, i.taps[3].xy);
+
+        return tex/4;
     }
 
     // Pass 2: add droplet
@@ -67,6 +81,9 @@
     {
     	fixed4 col = tex2D(_InputTex, i.uv);
     	float d = distance(i.uv, _HitPoint);
+    	if(d < 0.01) {
+    		col = fixed4(1,1,1,1);
+    	}
 //    	return float4(1,1,0,1);
         return col / pow(d / 0.1, 3);
     }
