@@ -37,6 +37,10 @@ public class paperController : MonoBehaviour {
 			if( Physics.Raycast( ray, out hit, 100 ) )
 			{
 				paperMaterial.SetVector ("_HitPoint", hit.textureCoord);
+				_kernelMaterial.SetVector ("_HitPoint", hit.textureCoord);
+				Graphics.Blit (null, _tex2, _kernelMaterial, 2);
+//				paperMaterial.SetTexture ("_WaterTex", _tex2);
+//				StepKernel (Time.time, Time.smoothDeltaTime);
 			}
 		}
 	
@@ -52,7 +56,6 @@ public class paperController : MonoBehaviour {
 
 		Material m = _kernelMaterial;
 		m.SetTexture ("_InputTex", _tex1);
-		m.SetVector ("_TimeParams", new Vector2 (time, deltaTime));
 		Graphics.Blit (null, _tex2, m, 1);
 
 		paperMaterial.SetTexture ("_WaterTex", _tex1);

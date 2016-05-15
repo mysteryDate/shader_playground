@@ -1,15 +1,4 @@
-﻿//
-// GPGPU kernels for point cloud
-//
-// Texture format:
-//
-// _PositionTex.xyz = position
-// _PositionTex.w   = any number
-//
-// _VelocityTex.xyz = velocity vector
-// _VelocityTex.w   = 0
-//
-Shader "custom/Kernel"
+﻿Shader "custom/Kernel"
 {
     Properties
     {
@@ -22,7 +11,10 @@ Shader "custom/Kernel"
     #include "ClassicNoise3D.cginc"
 
     sampler2D _InputTex;
+    float4 _InputTex_ST;
     float _RandomSeed;
+
+    float2 _HitPoint;
 
     // simply returns a zero vector, instead of freaking out
 	float3 norm(float3 vec) {
@@ -38,6 +30,25 @@ Shader "custom/Kernel"
         return frac(sin(dot(uv, float2(12.9898, 78.233))) * 43758.5453);
     }
 
+    //base input structs
+     struct vertexInput {
+        float4 vertex : POSITION;
+        float2 uv : TEXCOORD0;
+     };
+     struct vertexOutput {
+        float4 pos : SV_POSITION;
+        float2 uv : TEXCOORD0;
+     };
+
+     // vertex function
+     vertexOutput vert(vertexInput v){
+        vertexOutput o;
+
+        o.uv = TRANSFORM_TEX(v.uv, _InputTex);
+        o.pos = mul(UNITY_MATRIX_MVP, v.vertex);
+        return o;
+     }
+
     // Pass 0: clear texture
     float4 clear_tex(v2f_img i) : SV_Target 
     {
@@ -45,10 +56,19 @@ Shader "custom/Kernel"
     }
 
     // Pass 1: blend tex
-    float4 frag_init_velocity(v2f_img i) : SV_Target 
+    float4 spread(vertexOutput i) : SV_Target 
     {
         fixed4 col = tex2D(_InputTex, i.uv);
         return col + 0.01;
+    }
+
+    // Pass 2: add droplet
+    float4 drop(vertexOutput i) : SV_Target 
+    {
+    	fixed4 col = tex2D(_InputTex, i.uv);
+    	float d = distance(i.uv, _HitPoint);
+//    	return float4(1,1,0,1);
+        return col / pow(d / 0.1, 3);
     }
 
     ENDCG
@@ -67,8 +87,16 @@ Shader "custom/Kernel"
         {
             CGPROGRAM
             #pragma target 3.0
+            #pragma vertex vert
+            #pragma fragment spread
+            ENDCG
+        }
+        Pass
+        {
+            CGPROGRAM
+            #pragma target 3.0
             #pragma vertex vert_img
-            #pragma fragment frag_init_velocity
+            #pragma fragment drop
             ENDCG
         }
     }
