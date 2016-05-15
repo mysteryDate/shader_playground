@@ -3,6 +3,7 @@
 	Properties
 	{
 		_MainTex ("Texture", 2D) = "white" {}
+		_WaterTex ("Water Texture", 2D) = "white" {}
 		_Focus ("Focus", float) = 1
 		_Floats ("Floats", vector) = (1,1,1,1)
 	}
@@ -37,6 +38,8 @@
 
 			sampler2D _MainTex;
 			float4 _MainTex_ST;
+			sampler2D _WaterTex;
+			float4 _WaterTex_ST;
 
 			float2 _HitPoint;
 			float _Focus;
@@ -56,8 +59,10 @@
 			{
 				// sample the texture
 				fixed4 col = tex2D(_MainTex, i.uv);
+				fixed4 watercol = tex2D(_WaterTex, i.uv);
 				float d = distance(i.uv, _HitPoint);
-				return col / pow(d / _Floats.x, _Focus);
+				col = col / pow(d / _Floats.x, _Focus);
+				return watercol;
 			}
 			ENDCG
 		}

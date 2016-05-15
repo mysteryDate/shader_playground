@@ -22,6 +22,8 @@ public class paperController : MonoBehaviour {
 
 		Graphics.Blit (null, _tex1, _kernelMaterial, 0);
 		Graphics.Blit (null, _tex2, _kernelMaterial, 0);
+
+		paperMaterial.SetTexture ("_WaterTex", _tex1);
 	}
 	
 	// Update is called once per frame
@@ -34,7 +36,6 @@ public class paperController : MonoBehaviour {
 
 			if( Physics.Raycast( ray, out hit, 100 ) )
 			{
-				Debug.Log( hit.textureCoord );
 				paperMaterial.SetVector ("_HitPoint", hit.textureCoord);
 			}
 		}
@@ -52,7 +53,9 @@ public class paperController : MonoBehaviour {
 		Material m = _kernelMaterial;
 		m.SetTexture ("_InputTex", _tex1);
 		m.SetVector ("_TimeParams", new Vector2 (time, deltaTime));
-//		Graphics.Blit (null, _tex2, m, 1);
+		Graphics.Blit (null, _tex2, m, 1);
+
+		paperMaterial.SetTexture ("_WaterTex", _tex1);
 	}
 
 	Material CreateMaterial(Shader shader) {
